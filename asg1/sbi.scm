@@ -12,6 +12,39 @@
 ;;    program, which is the executed.  Currently it is only printed.
 ;;
 
+;; FROM EXAMPLES/SYMBOLS.SCM
+;; this is the *function-table*
+(define *symbol-table* (make-hash))
+(define (symbol-get key)
+        (hash-ref *symbol-table* key))
+(define (symbol-put! key value)
+        (hash-set! *symbol-table* key value))
+
+(for-each
+    (lambda (pair)
+            (symbol-put! (car pair) (cadr pair)))
+    `(
+
+        (log10_2 0.301029995663981195213738894724493026768189881)
+        (sqrt_2  1.414213562373095048801688724209698078569671875)
+        (e       2.718281828459045235360287471352662497757247093)
+        (pi      3.141592653589793238462643383279502884197169399)
+        (div     ,(lambda (x y) (floor (/ x y))))
+        (log10   ,(lambda (x) (/ (log x) (log 10.0))))
+        (mod     ,(lambda (x y) (- x (* (div x y) y))))
+        (quot    ,(lambda (x y) (truncate (/ x y))))
+        (rem     ,(lambda (x y) (- x (* (quot x y) y))))
+        (+       ,+)
+        (^       ,expt)
+        (ceil    ,ceiling)
+        (exp     ,exp)
+        (floor   ,floor)
+        (log     ,log)
+        (sqrt    ,sqrt)
+
+     ))
+
+
 (define *stderr* (current-error-port))
 
 (define *run-file*
@@ -52,6 +85,7 @@
         (usage-exit)
         (let* ((sbprogfile (car arglist))
                (program (readlist-from-inputfile sbprogfile)))
+               ;; replace write-program-by-line with interpreter function
               (write-program-by-line sbprogfile program))))
 
 (main (vector->list (current-command-line-arguments)))
