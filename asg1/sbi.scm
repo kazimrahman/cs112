@@ -13,16 +13,25 @@
 ;;
 
 ;; FROM EXAMPLES/SYMBOLS.SCM
-;; this is the *function-table*
-(define *symbol-table* (make-hash))
-(define (symbol-get key)
-        (hash-ref *symbol-table* key))
-(define (symbol-put! key value)
-        (hash-set! *symbol-table* key value))
+;; Define the three tables
+
+;; Function table
+(define *f-table* (make-hash))
+(define (f-set! key value)
+  (hash-set! *f-table* key value))
+;; Label table
+(define *l-table* (make-hash))
+
+;; Variable table
+(define *v-table* (make-hash))
+
+
+
+
 
 (for-each
     (lambda (pair)
-            (symbol-put! (car pair) (cadr pair)))
+            (f-set! (car pair) (cadr pair)))
     `(
 
         (log10_2 0.301029995663981195213738894724493026768189881)
@@ -45,6 +54,32 @@
      ))
 
 
+;; print
+(define (new-print expr)
+  (when (not(null? expr))
+    (map (lambda (a) (display (evalexpr a))) expr))
+  (newline))
+  
+;;let  
+(define (new-let arg)
+  (hash-set! *v-table* (car arg)
+     (evalexpr (cadr arg))))
+
+ ;;if
+(define (new-if arg)
+  (eval-expr (cadr arg)))
+ 
+
+;; dim
+;; Statement -> '(' 'dim' Array ')'
+;; Array -> '(' Variable Expression ')'
+;; Takes variable name and inserts into table
+(define (new-dim arg)
+  (when (= (length arg) 2)
+    (when (not(null? arg))
+      (hash-set! *variable-table* (car arg) (cadr arg)
+                 (make-vector (cadr arg)))))) 
+  
 (define *stderr* (current-error-port))
 
 (define *run-file*
@@ -54,15 +89,22 @@
         (path->string basepath))
 )
 
+
+
 (define (die list)
     (for-each (lambda (item) (display item *stderr*)) list)
     (newline *stderr*)
     (exit 1)
 )
 
+
+
+
 (define (usage-exit)
     (die `("Usage: " ,*run-file* " filename"))
 )
+
+
 
 (define (readlist-from-inputfile filename)
     (let ((inputfile (open-input-file filename)))
@@ -70,7 +112,29 @@
              (die `(,*run-file* ": " ,filename ": open failed"))
              (let ((program (read inputfile)))
                   (close-input-port inputfile)
-                         program))))
+                         program)   )))
+
+
+;;
+;; The function evalexpr outlines how to evaluate a list
+;; recursively.
+;; from hashexample.scm
+(define (evalexpr expr)
+   	 
+	(cond
+		;check variable table for the expr from the list
+		((hash-has-key? *v-table* expr)
+		 (hash-ref *v-table* expr))
+		;if not then check function table
+		((hash-has-key? *f-table* expr)
+		 (hash-ref *f-table* expr))
+		((number? expr) (+ expr 0.0))
+		((string? expr) expr)
+		((pair? expr)   (apply (hash-ref *f-table* (car expr))
+                                (map evalexpr (cdr expr))))
+	)
+)	
+
 
 (define (write-program-by-line filename program)
     (printf "==================================================~n")
@@ -86,6 +150,8 @@
         (let* ((sbprogfile (car arglist))
                (program (readlist-from-inputfile sbprogfile)))
                ;; replace write-program-by-line with interpreter function
+               ;(show "whole list" program)
               (write-program-by-line sbprogfile program))))
+
 
 (main (vector->list (current-command-line-arguments)))

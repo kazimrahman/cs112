@@ -9,12 +9,7 @@
 (define *hash* (make-hash))
 
 (define *list*
-    '(  (label (foo bar))
-        (      (line 2))
-        (sec   (sec line))
-        (      (line 4))
-        (last  (label))
-        (      (end))))
+    '(  (label (asjdflakshdf asldkfjhalsdkfjhalsdfjhas))(      (line 2))(sec   (sec line))(      (line 4)) (last  (label))(      (end))))
 
 (define (show label item)
         (newline)
@@ -32,5 +27,4 @@
 
 (put-in-hash *list*)
 
-(hash-for-each *hash*
-    (lambda (key value) (show key value)))
+(hash-for-each *hash* (lambda (key value) (show key value)))
