@@ -50,6 +50,12 @@
         (floor   ,floor)
         (log     ,log)
         (sqrt    ,sqrt)
+		(=       ,=)
+		(<       ,<)
+		(>       ,>)
+		(<=      ,<=)
+		(>=      ,>=)
+		(<>      ,(lambda (a b) (not (= a b))))
 
      ))
 
@@ -57,7 +63,7 @@
 ;; print
 (define (new-print expr)
   (when (not(null? expr))
-    (map (lambda (a) (display (evalexpr a))) expr))
+    (map (lambda (token) (display (evalexpr token))) expr))
   (newline))
   
 ;;let  
@@ -71,13 +77,10 @@
  
 
 ;; dim
-;; Statement -> '(' 'dim' Array ')'
-;; Array -> '(' Variable Expression ')'
-;; Takes variable name and inserts into table
 (define (new-dim arg)
   (when (= (length arg) 2)
     (when (not(null? arg))
-      (hash-set! *variable-table* (car arg) (cadr arg)
+      (hash-set! *v-table* (car arg) (cadr arg)
                  (make-vector (cadr arg)))))) 
   
 (define *stderr* (current-error-port))
@@ -118,7 +121,7 @@
 ;;
 ;; The function evalexpr outlines how to evaluate a list
 ;; recursively.
-;; from hashexample.scm
+;; from examples/scheme/hashexample.scm
 (define (evalexpr expr)
    	 
 	(cond
