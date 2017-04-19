@@ -83,6 +83,16 @@
       (hash-set! *v-table* (car arg) (cadr arg)
                  (make-vector (cadr arg)))))) 
   
+;; parse for the labels in the statement
+(define (label-scan program)
+	(map (lambda (line)
+		(when (and (>= (length line) 2) (symbol? (cadr line)))
+			(when (not (and (null? line) (null? (cdr line))))
+				(hash-set! *l-table* (cadr line)
+					(x (car line)))) program)
+		)
+))
+  
 (define *stderr* (current-error-port))
 
 (define *run-file*
